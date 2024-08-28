@@ -18,7 +18,7 @@ pub fn symlink_files(duplicates: &HashMap<String, Vec<PathBuf>>) -> Result<(), B
             .collect();
 
         let selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Select file to keep (enter to confirm)")
+            .with_prompt("Select file to keep as the original (enter to confirm)")
             .items(&options)
             .interact()?;
         
