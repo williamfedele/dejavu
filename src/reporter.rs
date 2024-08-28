@@ -1,7 +1,11 @@
-use std::collections::HashMap;
 use crate::hasher;
+use std::collections::HashMap;
+use std::error::Error;
+use std::path::PathBuf;
 
-pub fn find_duplicates(files: Vec<std::path::PathBuf>) -> HashMap<String, Vec<std::path::PathBuf>> {
+pub fn find_duplicates(
+    files: Vec<std::path::PathBuf>,
+) -> Result<HashMap<String, Vec<PathBuf>>, Box<dyn Error>> {
     let mut duplicates: HashMap<String, Vec<std::path::PathBuf>> = HashMap::new();
     for file in files {
         let hash = match hasher::hash_file(&file) {
@@ -12,7 +16,7 @@ pub fn find_duplicates(files: Vec<std::path::PathBuf>) -> HashMap<String, Vec<st
     }
 
     duplicates.retain(|_, files| files.len() > 1);
-    duplicates
+    Ok(duplicates)
 }
 
 pub fn report_duplicates(duplicates: HashMap<String, Vec<std::path::PathBuf>>) {

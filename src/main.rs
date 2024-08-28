@@ -1,9 +1,10 @@
 use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 
-mod scanner;
+mod deleter;
 mod hasher;
 mod reporter;
+mod scanner;
 
 #[derive(Debug, Clone, ValueEnum)]
 enum Action {
@@ -29,24 +30,26 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    run(cli.directories, cli.action);
+    if let Err(e) = run(cli.directories, cli.action) {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    }
 }
 
-fn run(directories: Vec<PathBuf>, action: Action) {
-    let files = scanner::scan_directories(directories);
-    let duplicates = reporter::find_duplicates(files);
+fn run(directories: Vec<PathBuf>, action: Action) -> Result<(), Box<dyn std::error::Error>> {
+    let files = scanner::scan_directories(directories)?;
+    let duplicates = reporter::find_duplicates(files)?;
     match action {
-        Action::Report => {
-            reporter::report_duplicates(duplicates);
-        }
+        Action::Report => Ok(reporter::report_duplicates(duplicates)),
+
         Action::Move => {
             println!("Moving files");
+            Ok(())
         }
-        Action::Delete => {
-            println!("Deleting files");
-        }
+        Action::Delete => Ok(deleter::delete(duplicates)),
         Action::Symlink => {
             println!("Creating symlinks");
+            Ok(())
         }
     }
 }
