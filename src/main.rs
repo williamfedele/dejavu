@@ -5,11 +5,11 @@ mod deleter;
 mod hasher;
 mod reporter;
 mod scanner;
+mod symlinker;
 
 #[derive(Debug, Clone, ValueEnum)]
 enum Action {
     Report,
-    Move,
     Delete,
     Symlink,
 }
@@ -38,18 +38,30 @@ fn main() {
 
 fn run(directories: Vec<PathBuf>, action: Action) -> Result<(), Box<dyn std::error::Error>> {
     let files = scanner::scan_directories(directories)?;
+    if files.is_empty() {
+        println!("No files found.");
+        return Ok(());
+    }
+
     let duplicates = reporter::find_duplicates(files)?;
+    if duplicates.is_empty() {
+        println!("No duplicates found.");
+        return Ok(());
+    }
+
     match action {
         Action::Report => Ok(reporter::report_duplicates(duplicates)),
-
-        Action::Move => {
-            println!("Moving files");
-            Ok(())
-        }
-        Action::Delete => Ok(deleter::delete(duplicates)),
+        Action::Delete => {
+            match deleter::delete(duplicates){
+                Ok(_) => Ok(()),
+                Err(e) => Err(e),
+            }
+        },
         Action::Symlink => {
-            println!("Creating symlinks");
-            Ok(())
+            match symlinker::symlink_files(&duplicates) {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e),
+            }
         }
     }
 }

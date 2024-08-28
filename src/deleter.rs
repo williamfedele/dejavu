@@ -2,7 +2,7 @@ use dialoguer::{theme::ColorfulTheme, MultiSelect};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-pub fn handle_delete(
+pub fn delete(
     duplicates: HashMap<String, Vec<PathBuf>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for (_, paths) in duplicates {
@@ -32,11 +32,4 @@ pub fn handle_delete(
     }
 
     Ok(())
-}
-
-pub fn delete(duplicates: HashMap<String, Vec<PathBuf>>) {
-    match handle_delete(duplicates) {
-        Ok(_) => println!("Deletion process completed"),
-        Err(e) => eprintln!("An error occurred during the deletion process: {}", e),
-    }
 }
